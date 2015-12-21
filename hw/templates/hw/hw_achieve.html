@@ -1,0 +1,28 @@
+{% extends 'hw/base.html' %}
+
+{% block title %} {{ title }} {% endblock title %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		{% for link in breadUrls %}
+			{% cycle '大学' '学院' '专业' as tag silent %}
+			<li><a href="{{ link }}">{{ tag }}</a></li>
+		{% endfor %}
+		<li class="active">{{ major }}的作业</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block content %}
+<h3>{{ majorName }}专业-作业归档
+		<small>
+			<span class="label label-success">
+				<a href="{% url 'hw:newest_hws' major.id %}" style="color:white">查看最新一周的作业</a>
+			</span>
+		</small>
+	</h3>
+<ul class="list-group">
+	{% for w, link in weeks.items %}
+		<li class="list-group-item"><a href="{{ link }}">第{{ w }}周作业</a></li>
+	{% endfor %}
+</ul>
+{% endblock content %}

@@ -1,0 +1,84 @@
+一个学生可能有多个专业哦（多对多的关系，er图里写成多对一的关系了）
+
+自定义django的后台，先找出它的目录在哪：
+py -c "
+import sys
+sys.path = sys.path[1:]
+import django
+print(django.__path__)"
+
+['/usr/local/lib/python3.4/dist-packages/Django-1.8.5-py3.4.egg/django']
+
+
+？？ER图里，homework模型里，最后的3个属性是干嘛的？
+finish_detail? OK_num?
+(其实是缩进出了问题，花括号表示多值属性，它同时也是一个符合属性，嗯)
+
+er图里加多个topIt表示是否在该周置顶这个作业
+同样置顶的作业(⊙o⊙)…按照ddl正序排列啦
+
+
+【later】
+1）student，class manager和notice这几个后面再来实现，先做好基本的东西
+2）IP，suggestion这个都要做的
+3）时区等的东西如何做国际化呢？
+
+【明天】
+早上：做理论作业和看书，申请实验课上去讲
+中午：将happy这个project完善到和之前一模一样！然后放到服务器上去跑试试（申请多一个test的子域名）
+午睡半个小时（不要贪睡），醒后吃apple
+下午：将作业按周分好，还有时区要搞好(zh-cn)好像
+晚上：做一下ppt，想想还有什么可以完善的
+
+uwsgi --ini /mysite/mysite_uwsgi.ini
+uwsgi --ini /test/mysite_uwsgi.ini
+
+mysite_uwsgi.ini
+mysql.conf(db name -> happyjacket)
+
+
+
+
+上去讲的时候，多讲一些书里的理论在应用中有用到的东西，比如：
+1）max聚集函数，找最近的一周；
+2）
+
+
+tips:
+1）模板里的字典遍历
+{% for w, link in weeks.items %}
+	<li class="list-group-item"><a href="{{ link }}">第{{ w }}周作业</a></li>
+{% endfor %}
+
+2）总结一下服务器搭建的流程：
+uwsgi通过django的uwsgi接口去运行django
+nginx负责请求的转发，静态资源自己搞定，动态请求通过socket发到uwsgi去处理
+
+3）killall
+killall -QUIT uwsgi
+line = 'ps aux|grep uwsgi |grep 'uwsgi ./site1/.'|awk '{print $2}' ' for i in line: kill -9 i endfor
+作用是查看相关进程，取出进程号，挨个杀死。名字和字段数字可以按自己系统，自行设置。
+
+4）数据库导出，重新来做一下，然后
+
+5）scp root@test.happyjacket.me:/root/jacket/jacket/settings.py ss.py
+
+【展示】
+1）想法；
+2）数据库结构；
+3）
+
+【好用的文档】
+1. django的聚集
+https://docs.djangoproject.com/en/1.9/topics/db/aggregation/
+http://www.ibm.com/developerworks/cn/opensource/os-django-models/
+http://blog.csdn.net/java2king/article/details/5316829
+
+2. 豆瓣关于多个app的部署
+http://www.douban.com/note/388290505/
+http://dragonball.blog.51cto.com/1459915/1602581
+http://www.jianshu.com/p/e6ff4a28ab5a（看起来挺好的）
+
+
+
+3. 
