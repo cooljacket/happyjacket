@@ -98,7 +98,7 @@ $(document).ready(function(){
 	$(".hw_OK").click(function(){
 		var param = {hid: $(this).find('input').val()};
 		OK_num = $.ajax({
-		url: '/add_ok_num',
+		url: '/hw/add_ok_num',
 		async: false,
 		data: param,
 		dataType: 'json',

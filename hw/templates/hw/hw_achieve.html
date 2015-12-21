@@ -21,8 +21,8 @@
 		</small>
 	</h3>
 <ul class="list-group">
-	{% for w, link in weeks.items %}
-		<li class="list-group-item"><a href="{{ link }}">第{{ w }}周作业</a></li>
+	{% for w in weeks %}
+		<li class="list-group-item"><a href="{{ w.link }}">第{{ w.id }}周作业</a></li>
 	{% endfor %}
 </ul>
 {% endblock content %}

@@ -66,7 +66,7 @@
             </div>
 
 
-            <button id='goodBoy' type="button" class="btn btn-primary navbar-btn">
+            <button id='zan_jacket' type="button" class="btn btn-primary navbar-btn">
               <a style='color:white'>赞一个再撒</a>
               <span class="label label-info" id='hw_zan'>({{ hw_zan_num }})</span>
             </button>
@@ -129,9 +129,10 @@
 
   <script type="text/javascript">
   $(document).ready(function(){
-    $("#goodBoy").click(function(){
+    $("#zan_jacket").click(function(){
+      // alert('haha');
       $.ajax({
-        url: {% url 'hw:add_hw_zan' %}, 
+        url: '/hw/add_hw_zan/', 
         success: function(data, re, xml) {
           $("#hw_zan").text(data);
         }
@@ -142,7 +143,7 @@
       e.preventDefault();
       $('#sub_modal').modal('hide');
       $.ajax({
-          url: {% url 'hw:giveSuggestion' %},
+          url: '/hw/giveSuggestion/',
           type: 'POST',
           data:
           {

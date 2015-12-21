@@ -94,9 +94,20 @@ def hw_achieve(request, myMajor_id):
 	major = Major.objects.get(id=myMajor_id)
 	majorName = str(major)
 
-	weeks = {}
+	# weeks = {}
+	# for w in range(newest, 0, -1):
+	# 	weeks[w] = reverse('hw:week_hws', args=(myMajor_id, w))
+	class Tmp(object):
+		def __init__(self):
+			self.id = 0
+			self.link = '233'
+
+	weeks = []
 	for w in range(newest, 0, -1):
-		weeks[w] = reverse('hw:week_hws', args=(myMajor_id, w))
+		t = Tmp()
+		t.id = w
+		t.link = reverse('hw:week_hws', args=(myMajor_id, w))
+		weeks.append(t)
 
 	print('haha', weeks)
 	return render(request, 'hw/hw_achieve.html', locals())
@@ -226,6 +237,7 @@ def add_hw_zan(request):
 	hw_zan = ZAN.objects.get(name=hw_zan_name)
 	hw_zan.num = hw_zan.num + 1
 	hw_zan.save()
+	print('haha', hw_zan.num)
 	return HttpResponse('(' + str(hw_zan.num) + ')')
 
 
@@ -247,11 +259,13 @@ def giveSuggestion(request):
 	name = request.POST.get('name', 'nobody')
 	email = request.POST.get('email', '233@666.com')
 	suggestion = request.POST.get('suggestion', None)
+	print('huhu', name, email, suggestion, request.POST)
 
 	if suggestion:
 		sug = Suggestion(name=name, email=email, suggestion=suggestion)
 		sug.save()
 		content = 'name: %s\nemail: %s\nsuggestion: %s\n' % (name, email, suggestion)
+		print(sug, content)
 		send_email.send_email(EMAIL_TO_WHON, str('反馈意见'), str(content))
 		return HttpResponse('谢谢你的反馈意见')
 

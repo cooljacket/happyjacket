@@ -9,7 +9,7 @@ class ObjNum:
 	SCHOOL = 2
 	COLLEGE = 1
 
-hw_zan_name = '作业这个应用'
+hw_zan_name = '想赞就赞'
 
 
 def calBreadCrumbUrl(num, pk):
@@ -56,7 +56,8 @@ def get_hw_zan_num(request):
 		hw_zan_num = ZAN.get_zan_num(name=hw_zan_name)
 	except ZAN.DoesNotExist:
 		hw_zan_num = 0
-	return {'hw_zan_num': hw_zan_num}
+	finally:
+		return {'hw_zan_num': hw_zan_num}
 
 
 def sub_mail_for_hw(request):
