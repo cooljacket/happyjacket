@@ -88,12 +88,15 @@ line = 'ps aux|grep uwsgi |grep 'uwsgi ./site1/.'|awk '{print $2}' ' for i in li
 
 6）ajax，它的url用{% url ... %}去反向解析会出错，不造是什么鬼，有空再调，现在是硬编码
 
-7）
+7）复杂的ddl通知逻辑，简化为——由用户自己订制发送本周作业（最新一周啦）的邮件的日期（每周的周几）、时间，然后在邮件背后取一个取消订阅的链接（由随机码构成，长度为64，作为取消的id，base64加解密吧id，暂时不做了，明文）。可以多次订阅，比如星期三定一次，星期五定一次，or直接选择每天！
 
-【展示】
-1）想法；
-2）数据库结构；
-3）
+8）django后台服务不知道怎么搞，暂时想用：python定时去访问本地的一个页面（要密码的），在视图函数里做。。。
+
+9）找出所有”今天“的订阅，对于每一个订阅，搜索其所在专业的所有本周（最新一周）的作业，按一定格式（格式化字符串）发给它；
+
+10）finished...(2016-01-16 03:51)，最后还差定时。。。
+发现了引用django的配置的方法。。
+
 
 【好用的文档】
 1. django的聚集
@@ -117,4 +120,7 @@ mysql>create table my_table (name varchar(20) not null default '')type=myisam de
 #这句话就是创建一个表了,制定默认字符集为utf8
 http://imysql.com/charset_tips
 
-4. 
+4. 时区
+http://www.cnblogs.com/zifenger/p/3896926.html
+
+5. 

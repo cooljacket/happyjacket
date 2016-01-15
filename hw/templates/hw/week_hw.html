@@ -2,25 +2,10 @@
 
 {% block title %} {{ title }} {% endblock title %}
 
-{% block forEmail %}
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#sub_email">
-订阅作业DDL邮件提醒
+{% block sub_email %}
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#sub_email_modal">
+订阅作业邮件提醒
 </button>
-<div class="modal fade" id="sub_email" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-			<h3 class="modal-title" id="subModalLabel" style="text-align:center;"><b>订阅邮件提醒</b></h3>
-			</div>
-			<div class="modal-body">
-			此功能还在开发中
-			</div>
-			<div class="modal-footer">
-				<button id="sub_email" type="submit" class="btn btn-primary" data-dismiss="modal">关闭</button>
-			</div>
-		</div>
-	</div>
-</div>
 {% endblock %}
 
 {% block breadcrumb %}
@@ -32,6 +17,8 @@
 		<li class="active">{{ major }}的作业</li>
 	</ol>
 {% endblock breadcrumb %}
+
+
 
 {% block content %}
 <!-- 	<small><span class="label label-success">珍爱生命，尽早完成</span></small>
@@ -88,6 +75,66 @@
 	<span class="label label-warning">偷着乐吧，这周还没布置作业呢</span>
 {% endif %}
 
+<div class="modal fade" id="sub_email_modal">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+	    <div class="modal-header">
+	      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	      <h4 class="modal-title">订阅邮件提醒</h4>
+	    </div>
+	    <div class="modal-body">
+	     	<p id="sug_RespondText">每周在设定的时间会自动发送本周的作业汇总邮件</p>
+	     	<form id="sub_email_form" action="{% url 'hw:sub_email' %}">
+            {% csrf_token %}
+            	<div class="form-group">
+					<label for="yourName_sub">称呼：</label>
+					<input type="text" class="form-control" id="yourName_sub" placeholder="称呼" name="name">
+				</div>
+				<div class="form-group">
+					<label for="yourEmail_sub">邮箱：</label>
+					<input type="text" class="form-control" id="yourEmail_sub" placeholder="邮箱" name="name">
+				</div>
+				<div class="form-group">
+				<label for="yourtime_sub">选择时间：</label>
+				<div id="yourtime_sub">
+					<select id="sub_whichDay">
+						<option value="7">每天</option>
+						<option value="1">周一</option>
+						<option value="2">周二</option>
+						<option value="3">周三</option>
+						<option value="4">周四</option>
+						<option value="5">周五</option>
+						<option value="6">周六</option>
+						<option value="0">周日</option>
+					</select>
+					<select id="sub_hour">
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+						<option value="5">5</option>
+						<option value="6">6</option>
+						<option value="7">7</option>
+						<option value="9">8</option>
+						<option value="9">9</option>
+						<option value="10">10</option>
+						<option value="11">11</option>
+						<option value="12">12</option>
+					</select>
+					<select id="sub_stage">
+						<option value="0">上午</option>
+						<option value="1">下午</option>
+					</select>
+				</div>
+				</div>
+              <button id="sub_email_btn" type="submit" class="btn btn-primary">提交</button>
+            </form>
+	    </div>
+	  </div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<input id="my_major_id" type="hidden" value="{{ majorId }}">
 
 {% endblock content %}
 
@@ -103,8 +150,38 @@ $(document).ready(function(){
 		data: param,
 		dataType: 'json',
 	});
+
 	$(this).find('span').text(OK_num.responseText);
 	});
+
+	$("#sub_email_form").submit(function(e){
+		e.preventDefault();
+		$('#sub_email_modal').modal('hide');
+		$.ajax({
+			url: '/hw/sub_email/',
+			type: 'POST',
+			data:
+			{
+			name: $("#yourName_sub").val(),
+			email: $("#yourEmail_sub").val(),
+			whichDay: $("#sub_whichDay").val(),
+			hour: $("#sub_hour").val(),
+			stage: $("#sub_stage").val(),
+			major: $("#my_major_id").val(),
+			csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()
+			},
+			success: function(data, re, xml) {
+				$("#ajax_respond_title").text("订阅结果");
+				$("#ajax_RespondText").text(data);
+				$("#ajax_Result").modal('show');
+			},
+			error: function(data, re, xml) {
+				$("#ajax_respond_title").text("订阅结果");
+				$("#ajax_RespondText").text('提交失败，如果不是网络原因，请发邮件告知我，谢谢');
+				$("#ajax_Result").modal('show');
+			}
+		});
+	});	
 });
 </script>
 {% endblock myJS %}

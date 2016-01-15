@@ -35,4 +35,6 @@ urlpatterns = [
     url(r'^giveSuggestion/$', 'hw.views.giveSuggestion', name='giveSuggestion'),
     url(r'^aboutMe/$', 'hw.views.aboutMe', name='aboutMe'),
     url(r'^test/$', 'hw.views.myTest', name='myTest'),
+    url(r'^sub_email/$', 'hw.views.sub_email', name='sub_email'),
+    url(r'^check_sub_email/$', 'hw.views.check_sub_email', name='check_sub_email'),
 ]

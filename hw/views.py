@@ -3,18 +3,20 @@ from django.shortcuts import render, render_to_response
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.db.models import Max
+from django.db.models import Q
 # from django.views.generic.base import TemplateView
-import datetime
+import datetime, re
 
-from hw.models import College, School, Major, Course, Homework, ZAN, Suggestion
+from hw.models import College, School, Major, Course, Homework, ZAN, Suggestion, Sub_email
 from hw.utils.bread import getBreadUrls, ObjNum, hw_zan_name
 from hw.utils import send_email
-from hw.utils.settings import EMAIL_TO_WHON
+from hw.utils.settings import EMAIL_TO_WHON, DOMAIN_NAME
 
 def myTest(request):
-	week = Homework.objects.filter(myCourse_id=1).aggregate(Max('week'))
-	print(week)
-	return HttpResponse(week['week__max'])
+	# week = Homework.objects.filter(myCourse_id=1).aggregate(Max('week'))
+	# print(week)
+	# return HttpResponse(week['week__max'])
+	return HttpResponse(reverse('hw:newest_hws', args=[1]))
 
 # Create your views here.
 def index(request):
@@ -109,7 +111,6 @@ def hw_achieve(request, myMajor_id):
 		t.link = reverse('hw:week_hws', args=(myMajor_id, w))
 		weeks.append(t)
 
-	print('haha', weeks)
 	return render(request, 'hw/hw_achieve.html', locals())
 
 
@@ -237,7 +238,6 @@ def add_hw_zan(request):
 	hw_zan = ZAN.objects.get(name=hw_zan_name)
 	hw_zan.num = hw_zan.num + 1
 	hw_zan.save()
-	print('haha', hw_zan.num)
 	return HttpResponse('(' + str(hw_zan.num) + ')')
 
 
@@ -259,62 +259,83 @@ def giveSuggestion(request):
 	name = request.POST.get('name', 'nobody')
 	email = request.POST.get('email', '233@666.com')
 	suggestion = request.POST.get('suggestion', None)
-	print('huhu', name, email, suggestion, request.POST)
 
 	if suggestion:
 		sug = Suggestion(name=name, email=email, suggestion=suggestion)
 		sug.save()
-		content = 'name: %s\nemail: %s\nsuggestion: %s\n' % (name, email, suggestion)
-		print(sug, content)
 		send_email.send_email(EMAIL_TO_WHON, str('反馈意见'), str(content))
 		return HttpResponse('谢谢你的反馈意见')
 
 	return HttpResponse('反馈意见为空或传输数据出了故障，请稍后再试')
 
 
+def sub_email(request):
+	name = request.POST.get('name', 'nobody')
+	email = request.POST.get('email', None)
+	whichDay = request.POST.get('whichDay', None)
+	hour = request.POST.get('hour', None)
+	stage = request.POST.get('stage', None)
+	majorId = request.POST.get('major', None)
+	if email is '' or majorId is None or whichDay is None or hour is None or stage is None:
+		return HttpResponse('订阅失败，请补充好订阅的信息')
 
-# def hw_all_now(request, myMajor_id):
-# 	'''某专业的所有正进行中的作业'''
+	try:
+		major = str(Major.objects.get(id=majorId))
+	except Major.DoesNotExist:
+		return HttpResponse('订阅失败，请补充好订阅的信息')
 
-# 	try:
-# 		major = str(Major.objects.get(id=myMajor_id))
-# 	except Major.DoesNotExist:
-# 		return render(request, 'hw/404.html', {'err_msg': '并没有这个专业'})
+	hour += 12 * stage
+	sub_email = Sub_email(name=name, email=email, major_id=majorId, whichDay=whichDay, hour=hour)
+	sub_email.save()
 
-# 	title = '进行中的作业'
-# 	now = datetime.datetime.now()
-# 	courses = Course.objects.filter(myMajor_id=myMajor_id)
-# 	breadUrls = getBreadUrls(ObjNum.MAJOR, myMajor_id)
+	which_days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六', '天']
+	which_stage = ['上午', '下午']
+	msg = '订阅成功，您订阅了{major}专业的作业提醒邮件，时间为：每{day}的{stage}{hour}点(温馨提示：可以多次订阅不同时间段)'.format(
+		major=major, day=which_days[int(whichDay)], stage=which_stage[int(stage)], hour=hour
+	)
+	return HttpResponse(msg)
+
+
+from django.utils.timezone import utc
+from django.utils.timezone import localtime
+
+
+def get_sub_hws(majorId):
+	week = getLatestWeek(majorId)
+	courses = Course.objects.filter(myMajor_id=majorId)
+	msg = '本周（截止到今天）作业简报，详情见：{0}\n'.format(DOMAIN_NAME+reverse('hw:newest_hws', args=[majorId]))
+
+	for c in courses:
+		hws = list(Homework.objects.filter(myCourse_id=c.id).filter(week=week).order_by('deadline'))
+		howToSubmit = re.sub(r'</?\w+>', ' ', c.howToSubmit.replace('<br>', '\n'))
+		for hw in hws:
+			content = re.sub(r'</?\w+>', ' ', hw.description.replace('<br>', '\n'))
+			msg += '{0}，DDL是：{1}\n内容是：{2}\n提交方式为：{3}\n\n\n'.format(str(hw), hw.deadline.strftime("%Y-%m-%d %H:%M %a"), content, howToSubmit)
 	
-# 	now_hws = []
-# 	for c in courses:
-# 		now_hws = now_hws + list(Homework.objects.filter(myCourse_id=c.id).filter(deadline__gt = now))
-# 	now_hws.sort(key=lambda x:x.deadline, reverse=False)
-# 	goto = reverse('hw:pass_hws', args=(myMajor_id,))
-# 	for hw in now_hws:
-# 		hw.myCourse.howToSubmit = hw.myCourse.howToSubmit.replace('\n', '<br>')
-# 		hw.deadline = hw.deadline.strftime("%Y-%m-%d %H:%M %a")
-# 	return render(request, 'hw/now_hws.html', locals())
+	print(msg)
+
+	return msg
 
 
-# def hw_all_pass(request, myMajor_id):
-# 	'''某专业的所有已截止的作业'''
+def do_check_sub_email():
+	everyday = 7
+	now = localtime(datetime.datetime.utcnow().replace(tzinfo=utc))
+	hour = now.hour
+	today = now.weekday()
+	subs = Sub_email.objects.filter(Q(whichDay=today) | Q(whichDay=everyday)).filter(hour=hour)
 
-# 	try:
-# 		major = str(Major.objects.get(id=myMajor_id))
-# 	except Major.DoesNotExist:
-# 		return render(request, 'hw/404.html', {'err_msg': '并没有这个专业'})
+	for s in subs:
+		try:
+			msg = get_sub_hws(s.major_id)
+			send_email.send_email([s.email], '作业LA本周作业订阅', msg)
+			print('good', msg)
+		except Exception:
+			print('bad', s.email, msg)
 
-# 	title = '已截止的作业'
-# 	now = datetime.datetime.now()
-# 	courses = Course.objects.filter(myMajor_id=myMajor_id)
-# 	breadUrls = getBreadUrls(ObjNum.MAJOR, myMajor_id)
+def check_sub_email(request):
+	key = request.GET.get('key', None)
+	if key == '23345fafaafjadljkffalwofal;/.afan.nq==+)+0=':
+		do_check_sub_email()
+		return HttpResponse('come on!')
 
-# 	pass_hws = []
-# 	for c in courses:
-# 		pass_hws = pass_hws + list(Homework.objects.filter(myCourse_id=c.id).filter(deadline__lte = now).order_by('deadline'))
-# 	goto = reverse('hw:hw_all_now', args=(myMajor_id,))
-# 	for hw in pass_hws:
-# 		hw.myCourse.howToSubmit = hw.myCourse.howToSubmit.replace('\n', '<br>')
-# 		hw.deadline = hw.deadline.strftime("%Y-%m-%d %H:%M %a")
-# 	return render(request, 'hw/pass_hws.html', locals())
+	return HttpResponse('hehehe')

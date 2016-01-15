@@ -160,3 +160,15 @@ class ZanOnce(models.Model):
 	class Meta:
 		verbose_name_plural = '只赞一次'
 
+
+class Sub_email(models.Model):
+	"""sub email for homework"""
+	name = models.CharField(verbose_name='称呼', max_length=name_len)
+	email = models.EmailField(verbose_name='邮箱', max_length=35)
+	whichDay = models.SmallIntegerField(verbose_name='第几天')
+	hour = models.SmallIntegerField(verbose_name='时间')
+	# stage = models.SmallIntegerField(verbose_name='上下午')
+	major_id = models.PositiveIntegerField(verbose_name='专业id')
+
+	def __str__(self):
+		return 'name={0}, email={1}, whichDay={2}'.format(self.name, self.email, self.whichDay)
