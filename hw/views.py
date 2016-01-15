@@ -284,7 +284,7 @@ def sub_email(request):
 	except Major.DoesNotExist:
 		return HttpResponse('订阅失败，请补充好订阅的信息')
 
-	hour += 12 * stage
+	hour = int(hour) + 12 * int(stage)
 	sub_email = Sub_email(name=name, email=email, major_id=majorId, whichDay=whichDay, hour=hour)
 	sub_email.save()
 
