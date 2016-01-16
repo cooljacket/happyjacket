@@ -12,11 +12,15 @@ from hw.utils.bread import getBreadUrls, ObjNum, hw_zan_name
 from hw.utils import send_email
 from hw.utils.settings import EMAIL_TO_WHON, DOMAIN_NAME
 
+from django.utils.timezone import utc
+from django.utils.timezone import localtime
+
 def myTest(request):
 	# week = Homework.objects.filter(myCourse_id=1).aggregate(Max('week'))
 	# print(week)
 	# return HttpResponse(week['week__max'])
-	return HttpResponse(reverse('hw:newest_hws', args=[1]))
+	# return HttpResponse(reverse('hw:newest_hws', args=[1]))
+	return HttpResponse(localtime(datetime.datetime.utcnow().replace(tzinfo=utc)))
 
 # Create your views here.
 def index(request):
@@ -263,7 +267,8 @@ def giveSuggestion(request):
 	if suggestion:
 		sug = Suggestion(name=name, email=email, suggestion=suggestion)
 		sug.save()
-		send_email.send_email(EMAIL_TO_WHON, str('反馈意见'), str(content))
+		content = '{0}({1})给你提了反馈意见：\n{2}'.format(name, email, suggestion)
+		send_email.send_email(EMAIL_TO_WHON, '反馈意见', content)
 		return HttpResponse('谢谢你的反馈意见')
 
 	return HttpResponse('反馈意见为空或传输数据出了故障，请稍后再试')
