@@ -20,7 +20,8 @@ def myTest(request):
 	# print(week)
 	# return HttpResponse(week['week__max'])
 	# return HttpResponse(reverse('hw:newest_hws', args=[1]))
-	return HttpResponse(localtime(datetime.datetime.utcnow().replace(tzinfo=utc)))
+	# return HttpResponse(localtime(datetime.datetime.utcnow().replace(tzinfo=utc)))
+	return HttpResponse(get_sub_hws(1))
 
 # Create your views here.
 def index(request):
@@ -295,7 +296,7 @@ def sub_email(request):
 
 	which_days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六', '天']
 	which_stage = ['上午', '下午']
-	msg = '订阅成功，您订阅了{major}专业的作业提醒邮件，时间为：每{day}的{stage}{hour}点(温馨提示：可以多次订阅不同时间段)'.format(
+	msg = '订阅成功，您订阅了{major}专业的作业提醒邮件，时间为：每{day}{stage}的{hour}点(温馨提示：可以多次订阅不同时间段)'.format(
 		major=major, day=which_days[int(whichDay)], stage=which_stage[int(stage)], hour=hour
 	)
 	return HttpResponse(msg)
@@ -310,11 +311,12 @@ def get_sub_hws(majorId):
 	courses = Course.objects.filter(myMajor_id=majorId)
 	msg = '本周（截止到今天）作业简报，详情见：{0}\n'.format(DOMAIN_NAME+reverse('hw:newest_hws', args=[majorId]))
 
+	cnt = 0
 	for c in courses:
 		hws = list(Homework.objects.filter(myCourse_id=c.id).filter(week=week).order_by('deadline'))
-		howToSubmit = re.sub(r'</?\w+>', ' ', c.howToSubmit.replace('<br>', '\n'))
+		howToSubmit = re.sub(r'</?\w+[^>]*>', ' ', c.howToSubmit.replace('<br>', '\n'))
 		for hw in hws:
-			content = re.sub(r'</?\w+>', ' ', hw.description.replace('<br>', '\n'))
+			content = re.sub(r'</?\w+[^>]*>', ' ', hw.description.replace('<br>', '\n'))
 			msg += '{0}，DDL是：{1}\n内容是：{2}\n提交方式为：{3}\n\n\n'.format(str(hw), hw.deadline.strftime("%Y-%m-%d %H:%M %a"), content, howToSubmit)
 	
 	print(msg)

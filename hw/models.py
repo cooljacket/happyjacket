@@ -172,3 +172,6 @@ class Sub_email(models.Model):
 
 	def __str__(self):
 		return 'name={0}, email={1}, whichDay={2}'.format(self.name, self.email, self.whichDay)
+
+	class Meta:
+		verbose_name_plural = '作业订阅'
